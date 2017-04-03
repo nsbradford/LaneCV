@@ -45,7 +45,7 @@ class ParticleFilterModel():
         return self._update(measurement)
 
 
-    def updateStateNoEvidence():
+    def updateStateNoEvidence(self):
         # TODO should still update somewhat by applying noise
         return self.state
 
@@ -145,18 +145,26 @@ class MetaModel():
     """ A combination of 1 or more ParticleFilterModels. """
 
     def __init__(self):
-        self.pfmodel = ParticleFilterModel()
+        self.pfmodel_1 = ParticleFilterModel()
+        self.pfmodel_2 = ParticleFilterModel()
+
 
     def updateState(self, multimodel):
-        if multimodel is None:
-            return self.pfmodel.updateStateNoEvidence()
+        if multimodel.model1 is None and multimodel.model2 is None:
+            self.pfmodel_1.updateStateNoEvidence()
+            self.pfmodel_2.updateStateNoEvidence()
+        elif multimodel.model2 is None:
+            self.pfmodel_1.updateState(multimodel.model1)
+            self.pfmodel_2.updateStateNoEvidence()
         else:
-            multimodel = MetaModel._choose_between_models(multimodel, self.pfmodel.state_matrix)
-            return self.pfmodel.updateState(multimodel.model1)
+            multimodel = MetaModel.chooseBetweenModels(multimodel, self.pfmodel_1.state_matrix)
+            self.pfmodel_1.updateState(multimodel.model1)
+            self.pfmodel_2.updateState(multimodel.model2)
+        return MultiModel(self.pfmodel_1.state, self.pfmodel_2.state)
 
 
     @staticmethod
-    def _choose_between_models(multimodel, last_measurement):
+    def chooseBetweenModels(multimodel, last_measurement):
         """
             Args:
                 multimodel (MultiModel): new evidence
@@ -166,7 +174,7 @@ class MetaModel():
         """
         m1 = multimodel.model1
         m2 = multimodel.model2
-        if multimodel.model2 is not None and last_measurement is not None:
+        if multimodel.model2 is not None:
             observations = np.array([   [m1.offset, m1.orientation],
                                         [m2.offset, m2.orientation]])
             distance = ParticleFilterModel._distance(new_particles=observations, 

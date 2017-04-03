@@ -13,10 +13,9 @@ from .config import Constants
 
 class MultiModel():
 
-    def __init__(self, model1, model2=None, img=None):
+    def __init__(self, model1, model2=None):
         self.model1 = model1
         self.model2 = model2
-        self.img = img
 
 
 

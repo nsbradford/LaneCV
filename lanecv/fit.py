@@ -65,7 +65,7 @@ def fitLines(copy):
     if x.size < 50:
         print('No lane detected.')
         cv2.putText(img, 'No lane detected', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,255), 1, cv2.LINE_AA)
-        return img, None
+        return img, MultiModel(None, None)
     
     try:
         mymodel, inliers = fitOneModel(x, y, height=img.shape[0], width=img.shape[1])
@@ -79,9 +79,9 @@ def fitLines(copy):
             mymodel2 = None
     except ValueError as e:
         print('ValueError in model_ransac.fit(): {}'.format(str(e)))
-        return img, None
+        return img, MultiModel(None, None)
     # print('\tMultiple lines: {}\t{}/{} inliers'.format(is_multi, np.count_nonzero(inliers), inliers.size))
     text = 'offset {0:.2f} orientation {1:.2f}'.format(mymodel.offset, mymodel.orientation)
     # print(text)
     cv2.putText(img, text, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
-    return img, MultiModel(mymodel, mymodel2, img)
+    return img, MultiModel(mymodel, mymodel2)
