@@ -1,7 +1,7 @@
 import unittest
 
-from lanes.model import LineModel
-from lanes.config import Constants
+from lanecv.model import LineModel
+from lanecv.config import Constants
 
 class LineModelTest(unittest.TestCase):
 

@@ -7,8 +7,9 @@
 import nose
 import cv2
 
-from lanes.lanes import resizeFrame, getPerspectiveMatrix, laneDetection, Constants
-from lanes.particlefilter import ParticleFilterModel
+from lanecv.lanes import resizeFrame, getPerspectiveMatrix, laneDetection, Constants
+from lanecv.particlefilter import ParticleFilterModel
+
 
 def openVideo(filename):
     """ 1920 x 1080 original, 960 x 540 resized """ 
@@ -94,14 +95,16 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
     cap.release()
     cv2.destroyAllWindows()
 
+
 def testAll():
     print('Test...')
     argv = ['fake', 
             '-verbosity=2', 
             '--nocapture', 
             '--with-coverage', 
-            '--cover-package=lanes']
+            '--cover-package=lanecv']
     result = nose.run(argv=argv)
+
 
 if __name__ == '__main__':
     testAll()

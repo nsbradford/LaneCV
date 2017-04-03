@@ -108,8 +108,9 @@ class ParticleFilterModel():
 
     @staticmethod
     def distance(new_particles, measurement):
-        """ Squared distance. average of 2 columns, for each row """
-        # TODO normalize by variance
+        """ Squared distance. average of 2 columns, for each row.
+            Normalize by the expected variance of true values.
+        """
         transform = np.array([1000/LineModel.OFFSET_RANGE, 1000/LineModel.ORIENTATION_RANGE])
         normalized_particles = new_particles * transform
         normalized_measurement = measurement * transform
@@ -118,17 +119,27 @@ class ParticleFilterModel():
         return answer * ParticleFilterModel.LEARNING_RATE
 
     def apply_control(self, resampled_particles):
+        """ Apply control model (motion of the plane).
+            For now, model as Gaussian noise applied to each particle,
+                which prevents all particles collapsing to a single point.
+        """
         noise1 = np.random.normal(0, ParticleFilterModel.VAR_OFFSET, (self.n, 1))
         noise2 = np.random.normal(0, ParticleFilterModel.VAR_ORIENTATION, (self.n, 1))
         noise = np.hstack((noise1, noise2))
         return resampled_particles + noise
 
     def calc_state(self):
+        """ Estimate the state given the current distribution of particles;
+            Return the mean position.
+        """
         return np.average(a=self.particles, axis=0, weights=self.weights) # for each column
 
     def matrix_to_state(self):
+        """ Convert the internal matrix to a state. """
         model1 = LineModel(offset=self.state_matrix[0], orientation=self.state_matrix[1],
                             height=Constants.IMG_SCALED_HEIGHT, width=Constants.IMG_SCALED_WIDTH)
+        # model2 = LineModel(offset=self.state_matrix[2], orientation=self.state_matrix[3],
+        #                     height=Constants.IMG_SCALED_HEIGHT, width=Constants.IMG_SCALED_WIDTH)
         return State(model1, None)
 
     def show(self, img):
