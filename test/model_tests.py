@@ -32,9 +32,18 @@ class LineModelTest(unittest.TestCase):
 
 class MetaModelTest(unittest.TestCase):
 
-    def test_chooseBetweenModels(self):
+    def test_chooseBetweenModels_firstIsClosest(self):
         m1 = LineModel(offset=0.4, orientation=170.1)
         m2 = LineModel(offset=0.3, orientation=179.1)
+        last_measurement = np.array([0.5, 170.0])
+        multimodel = MultiModel(m1, m2)
+        choice_multimodel = MetaModel.chooseBetweenModels(multimodel, last_measurement)
+        self.assertEquals(choice_multimodel.model1.offset, 0.4)
+        self.assertEquals(choice_multimodel.model1.orientation, 170.1)
+
+    def test_chooseBetweenModels_secondIsClosest(self):
+        m1 = LineModel(offset=0.3, orientation=179.1)
+        m2 = LineModel(offset=0.4, orientation=170.1)
         last_measurement = np.array([0.5, 170.0])
         multimodel = MultiModel(m1, m2)
         choice_multimodel = MetaModel.chooseBetweenModels(multimodel, last_measurement)

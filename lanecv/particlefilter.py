@@ -13,7 +13,7 @@ from .config import Constants
 
 class ParticleFilterModel():
 
-    LEARNING_RATE = 1e-2
+    LEARNING_RATE = 1e-4
     VAR_OFFSET = LineModel.OFFSET_RANGE / 100
     VAR_ORIENTATION = LineModel.ORIENTATION_RANGE / 100
     VISUALIZATION_SIZE = 300
