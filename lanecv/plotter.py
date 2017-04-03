@@ -47,11 +47,11 @@ def showFilter(particlefilter, img):
     x = (x * transform).astype(int)
     particle_overlay[tuple(x.T)] = 1
     
-    if particlefilter.last_measurement is not None:
+    if particlefilter.state is not None:
         ycoord = int((particlefilter.state_matrix[0] - LineModel.OFFSET_MIN) * transform[0])
         xcoord = int((particlefilter.state_matrix[1] - LineModel.ORIENTATION_MIN) * transform[1])
         cv2.circle(particle_overlay, (xcoord, ycoord), radius=15, color=255) #color=(0,0,255))
     cv2.imshow('particles', particle_overlay)
 
     if img is not None:
-        cv2.imshow('model', plotModel('Filter', img, particlefilter.state.model1, color=(0,0,255)))
+        cv2.imshow('model', plotModel('Filter', img, particlefilter.state, color=(0,0,255)))

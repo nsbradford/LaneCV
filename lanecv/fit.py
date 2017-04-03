@@ -8,8 +8,9 @@ import numpy as np
 from sklearn import linear_model
 
 from .config import Constants
-from .model import State, LineModel
+from .model import MultiModel, LineModel
 from .plotter import plotModel
+
 
 def extractXY(img):
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -28,22 +29,21 @@ def isMultiLine(x, y, inliers, outliers):
     if percent_outlier < .2:
         if debug: print('isMultiLine(): Too few outliers')
         return False
+    else:
+        combined = np.vstack((x, y))
+        cov = np.cov(combined)
+        assert cov.shape == (2,2), cov.shape
+        evals, evecs = np.linalg.eigh(cov)
+        eig_is_multi = evals[1] / 10 < evals[0]
 
-    combined = np.vstack((x, y))
-    cov = np.cov(combined)
-    assert cov.shape == (2,2), cov.shape
-    evals, evecs = np.linalg.eigh(cov)
-    eig_is_multi = evals[1] / 10 < evals[0]
-
-    is_same = eig_is_multi == percent_is_multi
-    if debug: print('SameResult: {}\t Eig(cov): {} \t Outlier: {:.1f}%'.format(is_same, eig_is_multi, percent_outlier*100))
-    return eig_is_multi or percent_is_multi #, int(evals[0]), int(evals[1])
+        is_same = eig_is_multi == percent_is_multi
+        if debug: print('SameResult: {}\t Eig(cov): {} \t Outlier: {:.1f}%'.format(is_same, eig_is_multi, percent_outlier*100))
+        return eig_is_multi or percent_is_multi
 
 
 def fitOneModel(x, y, height, width):
     x = x.reshape(x.size, 1)
     y = y.reshape(y.size, 1)
-    # print('\tfit {} {}'.format(x.shape, y.shape))
     model_ransac = linear_model.RANSACRegressor(base_estimator=linear_model.LinearRegression())
                                                 #max_trials=1000)
                                                 # residual_threshold=5.0 )
@@ -53,7 +53,6 @@ def fitOneModel(x, y, height, width):
     inliers = model_ransac.inlier_mask_
     mymodel = LineModel.from_line(m, b)
     return mymodel, inliers
-
 
 
 def fitLines(copy):
@@ -76,8 +75,6 @@ def fitLines(copy):
         if is_multi:
             mymodel2, inliers2 = fitOneModel(x[outliers], y[outliers], height=img.shape[0], width=img.shape[1])
             img = plotModel('RANSAC-2', img, mymodel2, inliers2, x, y, color=(0,255,0))
-            # if np.count_nonzero(outliers)/inliers.size > .4:
-            #     clustering(np.vstack((x, y)).T)
         else:
             mymodel2 = None
     except ValueError as e:
@@ -87,4 +84,4 @@ def fitLines(copy):
     text = 'offset {0:.2f} orientation {1:.2f}'.format(mymodel.offset, mymodel.orientation)
     # print(text)
     cv2.putText(img, text, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
-    return img, State(mymodel, mymodel2, img)
+    return img, MultiModel(mymodel, mymodel2, img)

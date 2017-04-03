@@ -8,7 +8,7 @@ import nose
 import cv2
 
 from lanecv.lanes import resizeFrame, getPerspectiveMatrix, laneDetection, Constants
-from lanecv.particlefilter import ParticleFilterModel
+from lanecv.particlefilter import MetaModel
 from lanecv.plotter import showFilter
 
 
@@ -71,8 +71,8 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         Returns:
             None
     """
-    model = ParticleFilterModel()
-    showFilter(model, None)
+    metamodel = MetaModel()
+    showFilter(metamodel.pfmodel, None)
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     cap = openVideo(filename)
@@ -89,8 +89,8 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
             continue
         img = resizeFrame(frame, highres_scale)
         curve, state = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
-        model.update_state(state)
-        showFilter(model, curve)
+        metamodel.updateState(state)
+        showFilter(metamodel.pfmodel, curve)
         if cv2.waitKey(1) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
     cap.release()

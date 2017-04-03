@@ -11,12 +11,13 @@ import math
 from .config import Constants
 
 
-class State():
+class MultiModel():
 
     def __init__(self, model1, model2=None, img=None):
         self.model1 = model1
         self.model2 = model2
         self.img = img
+
 
 
 class LineModel():
@@ -50,6 +51,19 @@ class LineModel():
     def from_line(cls, m, b):
         offset, orientation = LineModel.lineToOffsetOrientation(m, b)
         return cls(offset, orientation + 180, m=m, b=b)
+
+
+    @staticmethod
+    def modelToMatrix(model):
+        """ Convert model to matrix representation. """
+        return np.array([model.offset, model.orientation])
+
+
+    @staticmethod
+    def matrixToModel(model_matrix):
+        """ Convert the internal matrix to a model. """
+        return LineModel(offset=model_matrix[0], orientation=model_matrix[1])
+
 
     @staticmethod
     def lineToOffsetOrientation(m, b):
@@ -128,4 +142,3 @@ class LineModel():
         else: # not positive_slope and not positive_offset
             answer = -1
         return answer
-
