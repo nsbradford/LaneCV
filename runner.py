@@ -9,6 +9,7 @@ import cv2
 
 from lanecv.lanes import resizeFrame, getPerspectiveMatrix, laneDetection, Constants
 from lanecv.particlefilter import ParticleFilterModel
+from lanecv.plotter import showFilter
 
 
 def openVideo(filename):
@@ -71,7 +72,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
             None
     """
     model = ParticleFilterModel()
-    model.show(None)
+    showFilter(model, None)
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     cap = openVideo(filename)
@@ -89,7 +90,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         img = resizeFrame(frame, highres_scale)
         curve, state = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
         model.update_state(state)
-        model.show(curve)
+        showFilter(model, curve)
         if cv2.waitKey(1) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
     cap.release()
@@ -104,15 +105,17 @@ def testAll():
             '--with-coverage', 
             '--cover-package=lanecv']
     result = nose.run(argv=argv)
+    return result
 
 
 if __name__ == '__main__':
-    testAll()
-    # pictureDemo('taxi_straight.png')
-    # pictureDemo('taxi_side.png')
-    # pictureDemo('taxi_curve.png')
-    # videoDemo('taxi_intersect.mp4', is_display=True) # framerate of 29.97
-    # videoDemo('../../taxi_trim.mp4') # framerate of 29.97
-    # timerDemo()
-    # particleFilterDemo('../../taxi_trim.mp4')
-    particleFilterDemo('taxi_intersect.mp4')
+    testResult = testAll()
+    if testResult:
+        # pictureDemo('taxi_straight.png')
+        # pictureDemo('taxi_side.png')
+        # pictureDemo('taxi_curve.png')
+        # videoDemo('taxi_intersect.mp4', is_display=True) # framerate of 29.97
+        # videoDemo('../../taxi_trim.mp4') # framerate of 29.97
+        # timerDemo()
+        # particleFilterDemo('../../taxi_trim.mp4')
+        particleFilterDemo('taxi_intersect.mp4')

@@ -5,12 +5,10 @@
 
 """
 
-import cv2
 import numpy as np
 
 from .model import State, LineModel
 from .config import Constants
-from .plotter import plotModel
 
 
 class ParticleFilterModel():
@@ -141,26 +139,3 @@ class ParticleFilterModel():
         # model2 = LineModel(offset=self.state_matrix[2], orientation=self.state_matrix[3],
         #                     height=Constants.IMG_SCALED_HEIGHT, width=Constants.IMG_SCALED_WIDTH)
         return State(model1, None)
-
-    def show(self, img):
-        # print('\tFilter | \t offset {0:.2f} \t orientation {1:.2f}'.format(
-        #                     self.state_matrix[0], self.state_matrix[1]))
-        length = ParticleFilterModel.VISUALIZATION_SIZE
-        img_shape = (length,length)
-        shape = (LineModel.OFFSET_RANGE, LineModel.ORIENTATION_RANGE)
-        
-        particle_overlay = np.zeros(img_shape)
-        x = self.particles + np.array([- LineModel.OFFSET_MIN, - LineModel.ORIENTATION_MIN])
-        x = x.clip(np.array([0, 0]), np.array(shape)-1) # Clip out-of-bounds particles
-        transform = np.array([length/LineModel.OFFSET_RANGE, length/LineModel.ORIENTATION_RANGE])
-        x = (x * transform).astype(int)
-        particle_overlay[tuple(x.T)] = 1
-        
-        if self.last_measurement is not None:
-            ycoord = int((self.state_matrix[0] - LineModel.OFFSET_MIN) * transform[0])
-            xcoord = int((self.state_matrix[1] - LineModel.ORIENTATION_MIN) * transform[1])
-            cv2.circle(particle_overlay, (xcoord, ycoord), radius=15, color=255) #color=(0,0,255))
-        cv2.imshow('particles', particle_overlay)
-
-        if img is not None:
-            cv2.imshow('model', plotModel('Filter', img, self.state.model1, color=(0,0,255)))
