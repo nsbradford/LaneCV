@@ -11,48 +11,8 @@ import math
 
 from .config import Constants
 from .fit import fitLines
-
-
-def resizeFrame(img, scale):
-    return cv2.resize(img, dsize=None, fx=scale, fy=scale)
-
-
-def getPerspectivePoints(highres_scale):
-    original_width = 1920
-    original_height = 1080
-    scaled_width = int(highres_scale * original_width)
-    scaled_height = int(highres_scale * original_height)
-    horizon_height = int(scaled_height / 3.0)
-    wing_height = int(scaled_height * 2.0 / 3.0)
-    right_width = int(scaled_width * 2.0 / 3.0)
-    left_width = int(scaled_width / 3.0)
-    topLeft = (int(scaled_width / 2.0 - 50), horizon_height + 50)
-    topRight = (int(scaled_width / 2.0 + 50), horizon_height + 50)
-    bottomLeft = (left_width, wing_height)
-    bottomRight = (right_width, wing_height)
-    return topLeft, topRight, bottomLeft, bottomRight
-
-
-def getPerspectiveMatrixFromPoints(topLeft, topRight, bottomLeft, bottomRight):
-    # pts1 = np.float32([[382, 48], [411, 48], [292, 565], [565, 565]])
-    # pts2 = np.float32([[0,0],[100,0],[0,1600],[100,1600]])
-    pts1 = np.float32([ topLeft, topRight, bottomLeft, bottomRight ])
-    pts2 = np.float32([[0,0], [Constants.IMG_SCALED_HEIGHT,0], [0,Constants.IMG_SCALED_HEIGHT], [Constants.IMG_SCALED_HEIGHT,Constants.IMG_SCALED_HEIGHT]])   
-    M = cv2.getPerspectiveTransform(pts1,pts2)  
-    return M
-
-
-def getPerspectiveMatrix(highres_scale):
-    topLeft, topRight, bottomLeft, bottomRight = getPerspectivePoints(highres_scale)
-    perspectiveMatrix = getPerspectiveMatrixFromPoints(topLeft, topRight, bottomLeft, bottomRight)
-    return perspectiveMatrix
-
-
-def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
-    cv2.circle(img, topLeft, radius=5, color=(0,0,255))
-    cv2.circle(img, topRight, radius=5, color=(0,0,255))
-    cv2.circle(img, bottomLeft, radius=5, color=(0,0,255))
-    cv2.circle(img, bottomRight, radius=5, color=(0,0,255))
+from .plotter import show9, addPerspectivePoints
+from .util import getPerspectivePoints
 
 
 def extractColor(img):
@@ -122,38 +82,6 @@ def addLabels(per, mask, background, colored, dilatedEroded, skeletoned, lines):
     cv2.putText(skeletoned, 'skeletoned', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,255), 1, cv2.LINE_AA)
     # cv2.putText(lines, 'Skeleton+HoughLines', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,255), 1, cv2.LINE_AA)
     return per, mask, background, colored, dilatedEroded, skeletoned, lines
-
-
-def show7(img, empty, per, mask, background, colored, lines):
-    scale = 0.5
-    img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
-    empty = cv2.resize(empty, dsize=None, fx=scale, fy=scale)
-    per = cv2.resize(per, dsize=None, fx=scale, fy=scale)
-    mask = cv2.resize(mask, dsize=None, fx=scale, fy=scale)
-    background = cv2.resize(background, dsize=None, fx=scale, fy=scale)
-    colored = cv2.resize(colored, dsize=None, fx=scale, fy=scale)
-    lines = cv2.resize(lines, dsize=None, fx=scale, fy=scale)
-
-    top = np.hstack((img, per, background))
-    bottom = np.hstack((empty, mask, colored, lines))
-    cv2.imshow('combined', np.vstack((top, bottom)))
-
-
-def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned, lines):
-    scale = 0.5
-    img = resizeFrame(img, scale)
-    empty = resizeFrame(empty, scale)
-    per = resizeFrame(per, scale)
-    mask = resizeFrame(mask, scale)
-    background = resizeFrame(background, scale)
-    colored = resizeFrame(colored, scale)
-    lines = resizeFrame(lines, scale)
-    dilatedEroded = resizeFrame(dilatedEroded, scale)
-    skeletoned = resizeFrame(skeletoned, scale)
-
-    top = np.hstack((img, per, background, mask))
-    bottom = np.hstack((empty, colored, dilatedEroded, skeletoned, lines))
-    cv2.imshow('combined', np.vstack((top, bottom)))
 
 
 def laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=True):

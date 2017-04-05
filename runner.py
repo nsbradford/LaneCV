@@ -7,9 +7,11 @@
 import nose
 import cv2
 
-from lanecv.lanes import resizeFrame, getPerspectiveMatrix, laneDetection, Constants
+from lanecv.config import Constants
+from lanecv.lanes import laneDetection
 from lanecv.particlefilter import MetaModel
-from lanecv.plotter import showFilter
+from lanecv.plotter import showFilter, showModel
+from lanecv.util import resizeFrame, getPerspectiveMatrix
 
 
 def openVideo(filename):
@@ -72,7 +74,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
             None
     """
     metamodel = MetaModel()
-    showFilter(metamodel.pfmodel_1, None)
+    showModel(metamodel, None)
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     cap = openVideo(filename)
@@ -90,8 +92,8 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         img = resizeFrame(frame, highres_scale)
         curve, state = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
         metamodel.updateState(state)
-        showFilter(metamodel.pfmodel_1, curve)
-        if cv2.waitKey(1) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
+        showModel(metamodel, curve)
+        if cv2.waitKey(0) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
     cap.release()
     cv2.destroyAllWindows()

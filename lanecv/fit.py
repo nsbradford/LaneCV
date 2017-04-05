@@ -71,10 +71,10 @@ def fitLines(copy):
         mymodel, inliers = fitOneModel(x, y, height=img.shape[0], width=img.shape[1])
         outliers = ~inliers
         is_multi = isMultiLine(x, y, inliers, outliers)
-        img = plotModel('RANSAC-1', img, mymodel, inliers, x, y, color=(255,0,0))
+        plotModel('RANSAC-1', img, mymodel, inliers, x, y, color=(255,0,0))
         if is_multi:
             mymodel2, inliers2 = fitOneModel(x[outliers], y[outliers], height=img.shape[0], width=img.shape[1])
-            img = plotModel('RANSAC-2', img, mymodel2, inliers2, x, y, color=(0,255,0))
+            plotModel('RANSAC-2', img, mymodel2, inliers2, x, y, color=(255,0,0))
         else:
             mymodel2 = None
     except ValueError as e:

@@ -11,6 +11,15 @@ import numpy as np
 from .config import Constants
 from .particlefilter import ParticleFilterModel
 from .model import LineModel
+from .util import resizeFrame
+
+
+
+def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
+    cv2.circle(img, topLeft, radius=5, color=(0,0,255))
+    cv2.circle(img, topRight, radius=5, color=(0,0,255))
+    cv2.circle(img, bottomLeft, radius=5, color=(0,0,255))
+    cv2.circle(img, bottomRight, radius=5, color=(0,0,255))
 
 
 def plotModel(name, img, mymodel, inliers=None, x=None, y=None, color=(255,0,0)):
@@ -33,7 +42,7 @@ def plotModel(name, img, mymodel, inliers=None, x=None, y=None, color=(255,0,0))
     return img
 
 
-def showFilter(particlefilter, img):
+def showFilter(text, particlefilter):
     # print('\tFilter | \t offset {0:.2f} \t orientation {1:.2f}'.format(
     #                     self.state_matrix[0], self.state_matrix[1]))
     length = ParticleFilterModel.VISUALIZATION_SIZE
@@ -51,7 +60,49 @@ def showFilter(particlefilter, img):
         ycoord = int((particlefilter.state_matrix[0] - LineModel.OFFSET_MIN) * transform[0])
         xcoord = int((particlefilter.state_matrix[1] - LineModel.ORIENTATION_MIN) * transform[1])
         cv2.circle(particle_overlay, (xcoord, ycoord), radius=15, color=255) #color=(0,0,255))
-    cv2.imshow('particles', particle_overlay)
+    cv2.imshow(text, particle_overlay)
 
+
+def show7(img, empty, per, mask, background, colored, lines):
+    scale = 0.5
+    img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
+    empty = cv2.resize(empty, dsize=None, fx=scale, fy=scale)
+    per = cv2.resize(per, dsize=None, fx=scale, fy=scale)
+    mask = cv2.resize(mask, dsize=None, fx=scale, fy=scale)
+    background = cv2.resize(background, dsize=None, fx=scale, fy=scale)
+    colored = cv2.resize(colored, dsize=None, fx=scale, fy=scale)
+    lines = cv2.resize(lines, dsize=None, fx=scale, fy=scale)
+
+    top = np.hstack((img, per, background))
+    bottom = np.hstack((empty, mask, colored, lines))
+    cv2.imshow('combined', np.vstack((top, bottom)))
+
+
+def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned, lines):
+    scale = 0.5
+    img = resizeFrame(img, scale)
+    empty = resizeFrame(empty, scale)
+    per = resizeFrame(per, scale)
+    mask = resizeFrame(mask, scale)
+    background = resizeFrame(background, scale)
+    colored = resizeFrame(colored, scale)
+    lines = resizeFrame(lines, scale)
+    dilatedEroded = resizeFrame(dilatedEroded, scale)
+    skeletoned = resizeFrame(skeletoned, scale)
+
+    top = np.hstack((img, per, background, mask))
+    bottom = np.hstack((empty, colored, dilatedEroded, skeletoned, lines))
+    cv2.imshow('combined', np.vstack((top, bottom)))
+
+
+def showModel(metamodel, img):
+    if metamodel.pfmodel_1 is not None:
+        showFilter('model 1', metamodel.pfmodel_1)
+    if metamodel.pfmodel_2 is not None:
+        showFilter('model 2', metamodel.pfmodel_2)
     if img is not None:
-        cv2.imshow('model', plotModel('Filter', img, particlefilter.state, color=(0,0,255)))
+        if metamodel.pfmodel_1 is not None:
+            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255)))
+        if metamodel.pfmodel_2 is not None:
+            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255)))
+
