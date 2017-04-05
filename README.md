@@ -11,7 +11,7 @@ Airport taxiway lane detection with OpenCV-Python.
         plotter.py              Helpful plotting functions
     /test                       Unit tests
     /media                      Footage for testing
-    requirements.txt            Install with `$ python install -r requirements.txt`
+    requirements.txt            Install with $ python install -r requirements.txt
     runner.py
 
 
@@ -23,7 +23,15 @@ Note that you'll need OpenCV compiled with FFMPEG support in order to load video
 
 ## Overview
 
-A MetaModel is composed of two ParticleFilterModel instances, each of which track a single LineModel. The MetaModel receives updates in the form of a MultiModel (two LineModel instances). 
+Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor. Open the video, and for each frame, update the metamodel state using the results of laneDetection(). A MetaModel is composed of two ParticleFilterModel instances, each of which track a single LineModel. The MetaModel receives updates in the form of a MultiModel (two LineModel instances).
+
+### Assumptions
+
+* Each lane can be approximated as a single line in form [offset, orientation] from the nose of the plane.
+* There will never be more than 2 lanes in a single frame (could be changed by adding another step to fitLines() and extending the MetaModel).
+* The runway is a flat surface (used for perspective transform).
+* The taxiway lane markings are clearly defined yellow.
+* The plane motion is reasonably slow (required for background subtraction of the properller, as well as proper particle filtering).
 
 ## TODO
 
