@@ -12,7 +12,7 @@ Airport taxiway lane detection with OpenCV-Python.
     /test                       Unit tests
     /media                      Footage for testing
     requirements.txt            Install with $ python install -r requirements.txt
-    runner.py
+    runner.py                   Run a demo.
 
 
 ## Usage
@@ -37,7 +37,7 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
-* Protobuf
+* Protobuf Java integration
 * Reset ParticleFilterModel after evidence stops being collected
     * This is causing the models to swap positions
 
@@ -54,3 +54,8 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 * Perspective Transform: widen field, expand upwards to horizon
 * Try using ridges/edges instead of color (fails under extreme curves)
 * Video Stabilization with Visual Odometry (hard)
+
+
+## Protobuf steps
+
+* Installed pre-built binary protoc-3.2.0-osx-x86_64.zip from https://github.com/google/protobuf/releases/tag/v3.2.0

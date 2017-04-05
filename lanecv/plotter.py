@@ -101,8 +101,8 @@ def showModel(metamodel, img):
     if metamodel.pfmodel_2 is not None:
         showFilter('model 2', metamodel.pfmodel_2)
     if img is not None:
-        if metamodel.pfmodel_1 is not None:
+        if metamodel.pfmodel_1.state is not None:
             cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255)))
-        if metamodel.pfmodel_2 is not None:
+        if metamodel.pfmodel_2.state is not None:
             cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255)))
 
