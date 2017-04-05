@@ -10,11 +10,6 @@ message LaneMessage {
 	double orientation = 2;
 }
 
-message LaneMessageSingle {
-	LaneMessage laneMessage1 = 1;
-}
-
-message LaneMessageDouble {
-	LaneMessage laneMessage1 = 1;
-	LaneMessage laneMessage2 = 2;
+message MultiLaneMessage {
+	repeated LaneMessage laneMessages = 1;
 }

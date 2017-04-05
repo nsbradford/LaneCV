@@ -7,19 +7,20 @@
 
 import numpy as np
 
-from .model import MultiModel, LineModel
 from .config import Constants
 
 
 class ParticleFilterModel():
 
     LEARNING_RATE = 1e-4
-    VAR_OFFSET = LineModel.OFFSET_RANGE / 100
-    VAR_ORIENTATION = LineModel.ORIENTATION_RANGE / 100
     VISUALIZATION_SIZE = 300
     
 
-    def __init__(self, n=1000):
+    def __init__(self, particle_cls, n=1000):
+        VAR_SCALING = 100
+        self.particle_cls = particle_cls
+        self.VAR_OFFSET = particle_cls.OFFSET_RANGE / VAR_SCALING
+        self.VAR_ORIENTATION = particle_cls.ORIENTATION_RANGE / VAR_SCALING
         self.state_size = 2
         self.n = n
         self.particles = self._init_particles()
@@ -41,7 +42,7 @@ class ParticleFilterModel():
                 self.state (State): the new State estimate
 
         """
-        measurement = LineModel.modelToMatrix(model_measurement)
+        measurement = self.particle_cls.modelToMatrix(model_measurement)
         return self._update(measurement)
 
 
@@ -51,10 +52,10 @@ class ParticleFilterModel():
 
 
     def _init_particles(self):
-        p_offset = np.random.uniform(low=LineModel.OFFSET_MIN, high=LineModel.OFFSET_MAX, 
+        p_offset = np.random.uniform(low=self.particle_cls.OFFSET_MIN, high=self.particle_cls.OFFSET_MAX, 
                             size=self.n)
-        p_orientation = np.random.uniform(low=LineModel.ORIENTATION_MIN, 
-                            high=LineModel.ORIENTATION_MAX, size=self.n)
+        p_orientation = np.random.uniform(low=self.particle_cls.ORIENTATION_MIN, 
+                            high=self.particle_cls.ORIENTATION_MAX, size=self.n)
         return np.vstack((p_offset, p_orientation)).T
 
 
@@ -93,13 +94,14 @@ class ParticleFilterModel():
         resampled_indices = np.random.choice(a=self.n, size=self.n, replace=True, p=self.weights)
         resampled_particles = self.particles[resampled_indices, :]
         self.particles = self._apply_control(resampled_particles)
-        self.weights = 1 /( 1 + ParticleFilterModel._distance(self.particles, measurement))
+        self.weights = 1 /( 1 + ParticleFilterModel._distance(self.particle_cls, 
+                            self.particles, measurement))
         self.weights /= np.sum(self.weights)
         self.state_matrix = self._calc_state()
         assert self.particles.shape == (self.n,self.state_size), self.particles.shape
         assert self.weights.shape == (self.n,), self.weights.shape
         assert self.state_matrix.shape == (self.state_size,), self.state_matrix.shape
-        self.state = LineModel.matrixToModel(self.state_matrix)
+        self.state = self.particle_cls.matrixToModel(self.state_matrix)
         return self.state
 
 
@@ -108,8 +110,8 @@ class ParticleFilterModel():
             For now, model as Gaussian noise applied to each particle,
                 which prevents all particles collapsing to a single point.
         """
-        noise1 = np.random.normal(0, ParticleFilterModel.VAR_OFFSET, (self.n, 1))
-        noise2 = np.random.normal(0, ParticleFilterModel.VAR_ORIENTATION, (self.n, 1))
+        noise1 = np.random.normal(0, self.VAR_OFFSET, (self.n, 1))
+        noise2 = np.random.normal(0, self.VAR_ORIENTATION, (self.n, 1))
         noise = np.hstack((noise1, noise2))
         return resampled_particles + noise
 
@@ -122,7 +124,7 @@ class ParticleFilterModel():
 
 
     @staticmethod
-    def _distance(new_particles, measurement):
+    def _distance(particle_cls, new_particles, measurement):
         """ Get distance from each particle in the list to a measurement.
                 Use squared distance. Average of 2 columns, for each row.
                 Normalize by the expected variance of true values.
@@ -132,57 +134,9 @@ class ParticleFilterModel():
                 new_particles (np.array): n x state_size list of particles
                 measurement (np.array): state_size x 1 
         """
-        transform = np.array([1000/LineModel.OFFSET_RANGE, 1000/LineModel.ORIENTATION_RANGE])
+        transform = np.array([1000/particle_cls.OFFSET_RANGE, 1000/particle_cls.ORIENTATION_RANGE])
         normalized_particles = new_particles * transform
         normalized_measurement = measurement * transform
         distances = ((normalized_particles - normalized_measurement) ** 2)
         answer = distances.mean(axis=1)
         return answer * ParticleFilterModel.LEARNING_RATE
-
-
-
-class MetaModel():
-    """ A combination of 1 or more ParticleFilterModels. """
-
-    def __init__(self):
-        self.pfmodel_1 = ParticleFilterModel()
-        self.pfmodel_2 = ParticleFilterModel()
-
-
-    def updateState(self, multimodel):
-        if multimodel.model1 is None and multimodel.model2 is None:
-            self.pfmodel_1.updateStateNoEvidence()
-            self.pfmodel_2.updateStateNoEvidence()
-        elif multimodel.model2 is None:
-            self.pfmodel_1.updateState(multimodel.model1)
-            self.pfmodel_2.updateStateNoEvidence()
-        else:
-            multimodel = MetaModel.chooseBetweenModels(multimodel, self.pfmodel_1.state_matrix)
-            self.pfmodel_1.updateState(multimodel.model1)
-            self.pfmodel_2.updateState(multimodel.model2)
-        return MultiModel(self.pfmodel_1.state, self.pfmodel_2.state)
-
-
-    @staticmethod
-    def chooseBetweenModels(multimodel, last_measurement):
-        """
-            Args:
-                multimodel (MultiModel): new evidence
-                last_measurement (np.array): previous model
-            Returns:
-                MultiModel
-        """
-        m1 = multimodel.model1
-        m2 = multimodel.model2
-        if multimodel.model2 is not None:
-            observations = np.array([   [m1.offset, m1.orientation],
-                                        [m2.offset, m2.orientation]])
-            distance = ParticleFilterModel._distance(new_particles=observations, 
-                                measurement=last_measurement)
-            print('\t\tChoice 1 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
-                                distance[0], m1.offset, m1.orientation))
-            print('\t\tChoice 2 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
-                                distance[1], m2.offset, m2.orientation))
-            if distance[0] > distance[1]:
-                m1, m2 = m2, m1
-        return MultiModel(m1, m2)

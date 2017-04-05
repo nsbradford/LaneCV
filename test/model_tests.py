@@ -1,9 +1,8 @@
 import unittest
 import numpy as np
 
-from lanecv.model import MultiModel, LineModel
+from lanecv.model import MetaModel, MultiModel, LineModel
 from lanecv.config import Constants
-from lanecv.particlefilter import MetaModel
 
 
 class LineModelTest(unittest.TestCase):

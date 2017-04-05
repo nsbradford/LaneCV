@@ -8,7 +8,93 @@
 import cv2
 import numpy as np
 import math
+
 from .config import Constants
+from .particlefilter import ParticleFilterModel
+from .proto import lanecv_pb2
+
+
+class MetaModel():
+    """ A combination of 1 or more ParticleFilterModels. """
+
+    def __init__(self):
+        # params = {  offset_range=LineModel.OFFSET_RANGE, 
+        #             orientation_range=LineModel.ORIENTATION_RANGE, 
+        #             offset_min=LineModel.OFFSET_MIN, 
+        #             offset_max=LineModel.OFFSET_MAX, 
+        #             orientation_min=LineModel.ORIENTATION_MIN, 
+        #             orientation_max=LineModel.ORIENTATION_MAX
+        #         }
+        self.pfmodel_1 = ParticleFilterModel(particle_cls=LineModel)
+        self.pfmodel_2 = ParticleFilterModel(particle_cls=LineModel)
+
+
+    def updateState(self, multimodel):
+        if multimodel.model1 is None and multimodel.model2 is None:
+            self.pfmodel_1.updateStateNoEvidence()
+            self.pfmodel_2.updateStateNoEvidence()
+        elif multimodel.model2 is None:
+            self.pfmodel_1.updateState(multimodel.model1)
+            self.pfmodel_2.updateStateNoEvidence()
+        else:
+            multimodel = MetaModel.chooseBetweenModels(multimodel, self.pfmodel_1.state_matrix)
+            self.pfmodel_1.updateState(multimodel.model1)
+            self.pfmodel_2.updateState(multimodel.model2)
+        return MultiModel(self.pfmodel_1.state, self.pfmodel_2.state)
+
+
+    @staticmethod
+    def chooseBetweenModels(multimodel, last_measurement):
+        """
+            Args:
+                multimodel (MultiModel): new evidence
+                last_measurement (np.array): previous model
+            Returns:
+                MultiModel
+        """
+        m1 = multimodel.model1
+        m2 = multimodel.model2
+        if multimodel.model2 is not None:
+            observations = np.array([   [m1.offset, m1.orientation],
+                                        [m2.offset, m2.orientation]])
+            distance = ParticleFilterModel._distance(particle_cls=LineModel,
+                                new_particles=observations, 
+                                measurement=last_measurement)
+            print('\t\tChoice 1 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
+                                distance[0], m1.offset, m1.orientation))
+            print('\t\tChoice 2 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
+                                distance[1], m2.offset, m2.orientation))
+            if distance[0] > distance[1]:
+                m1, m2 = m2, m1
+        return MultiModel(m1, m2)
+
+    def messageServer(self):
+        output_file = 'OUTPUT.txt'
+        multiMessage = lanecv_pb2.MultiLaneMessage()
+
+        laneMessage1 = multiMessage.laneMessages.add()
+        laneMessage1.offset = self.pfmodel_1.state.offset
+        laneMessage1.orientation = self.pfmodel_1.state.orientation
+
+        if self.pfmodel_2.state is not None:
+            laneMessage2 = multiMessage.laneMessages.add()
+            laneMessage2.offset = self.pfmodel_2.state.offset
+            laneMessage2.orientation = self.pfmodel_2.state.orientation
+
+        with open(output_file, 'wb') as f:
+            f.write(multiMessage.SerializeToString())
+
+        mmread = lanecv_pb2.MultiLaneMessage()
+        with open(output_file, 'rb') as f:
+            try:
+                mmread.ParseFromString(f.read())
+            except IOError:
+                print('File not found')
+            print('PROTOBUF: read from file:')
+            for lm in mmread.laneMessages:
+                print('\tOffset {} Orientation {}'.format(lm.offset, lm.orientation))
+
+
 
 
 class MultiModel():

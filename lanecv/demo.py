@@ -1,7 +1,7 @@
 """
-	demo.py
-	04/5/2017
-	Nicholas S. Bradford
+    demo.py
+    04/5/2017
+    Nicholas S. Bradford
 
 """
 
@@ -10,8 +10,8 @@ import cv2
 
 from .config import Constants
 from .lanes import laneDetection
-from .particlefilter import MetaModel
-from .plotter import showFilter, showModel
+from .model import MetaModel
+from .plotter import showModel
 from .util import resizeFrame, getPerspectiveMatrix
 
 
@@ -66,6 +66,16 @@ def videoDemo(filename, is_display=True, highres_scale=0.5, scaled_height=Consta
     cv2.destroyAllWindows()
 
 
+def getVideoSource(filename):
+    cap = openVideo(filename)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        else:
+            yield frame
+
+
 def particleFilterDemo(filename, is_display=True, highres_scale=0.5, 
                         scaled_height=Constants.IMG_SCALED_HEIGHT, n_frames=-1):
     """ Video demo with particle filtering applied.
@@ -78,21 +88,15 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
     showModel(metamodel, None)
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()
-    cap = openVideo(filename)
-    count = 0
-    while(cap.isOpened()):
-        count += 1
-        # print('Frame #{}'.format(count))
-        if n_frames > 0 and count > n_frames:
+    for i, frame in enumerate(getVideoSource(filename)):
+        if n_frames > 0 and i > n_frames:
             break
-        ret, frame = cap.read()
-        if not ret:
-            break
-        if count % 1 != 0:
+        if i % 1 != 0:
             continue
         img = resizeFrame(frame, highres_scale)
         curve, state = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
         metamodel.updateState(state)
+        metamodel.messageServer()
         showModel(metamodel, curve)
         if cv2.waitKey(0) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break

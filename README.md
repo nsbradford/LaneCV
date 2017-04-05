@@ -21,6 +21,14 @@ Note that you'll need OpenCV compiled with FFMPEG support in order to load video
 
     $ python runner.py
 
+### Protobuf compilation
+
+After modifying the `lanecv.proto` definition, use `protoc` to recompile the python and java files.
+
+    $ cd ./lanecv/proto
+    $ protoc -I=. --python_out=. lanecv.proto
+    $ protoc -I=. --java_out=.  lanecv.proto 
+
 ## Overview
 
 Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor. Open the video, and for each frame, update the metamodel state using the results of laneDetection(). A MetaModel is composed of two ParticleFilterModel instances, each of which track a single LineModel. The MetaModel receives updates in the form of a MultiModel (two LineModel instances).
@@ -37,7 +45,9 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
-* Protobuf Java integration
+* Protobuf 
+    * Message architecture
+    * Java integration
 * Reset ParticleFilterModel after evidence stops being collected
     * This is causing the models to swap positions
 
