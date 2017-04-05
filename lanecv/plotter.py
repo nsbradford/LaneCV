@@ -14,7 +14,6 @@ from .model import LineModel
 from .util import resizeFrame
 
 
-
 def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
     cv2.circle(img, topLeft, radius=5, color=(0,0,255))
     cv2.circle(img, topRight, radius=5, color=(0,0,255))
@@ -23,9 +22,10 @@ def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
 
 
 def plotModel(name, img, mymodel, inliers=None, x=None, y=None, color=(255,0,0)):
-    # print('RANSAC:, y = {0:.2f}x + {1:.2f} offset {2:.2f} orient {3:.2f}'.format(mymodel.m, mymodel.b, mymodel.offset, mymodel.orientation))
+    # print('RANSAC:, y = {0:.2f}x + {1:.2f} offset {2:.2f} orient {3:.2f}'.format(
+    #                     mymodel.m, mymodel.b, mymodel.offset, mymodel.orientation))
     print('\t{0}: \t*offset {1:.2f} \t orientation {2:.2f}'.format(name, mymodel.offset, mymodel.orientation))
-    
+    print('\t{0}: \t*m {1:.2f} \t b {2:.2f}'.format('DEBUG', mymodel.m, mymodel.b))
     # plot hypothesis
     cv2.line(img=img, pt1=(0,int(mymodel.b)), pt2=(img.shape[1],int(mymodel.m*img.shape[1]+mymodel.b)), 
                         color=color, thickness=2)
@@ -63,6 +63,18 @@ def showFilter(text, particlefilter):
     cv2.imshow(text, particle_overlay)
 
 
+def showModel(metamodel, img):
+    if metamodel.pfmodel_1 is not None:
+        showFilter('model 1', metamodel.pfmodel_1)
+    if metamodel.pfmodel_2 is not None:
+        showFilter('model 2', metamodel.pfmodel_2)
+    if img is not None:
+        if metamodel.pfmodel_1.state is not None:
+            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255)))
+        if metamodel.pfmodel_2.state is not None:
+            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255)))
+
+
 def show7(img, empty, per, mask, background, colored, lines):
     scale = 0.5
     img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
@@ -95,14 +107,4 @@ def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned,
     cv2.imshow('combined', np.vstack((top, bottom)))
 
 
-def showModel(metamodel, img):
-    if metamodel.pfmodel_1 is not None:
-        showFilter('model 1', metamodel.pfmodel_1)
-    if metamodel.pfmodel_2 is not None:
-        showFilter('model 2', metamodel.pfmodel_2)
-    if img is not None:
-        if metamodel.pfmodel_1.state is not None:
-            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255)))
-        if metamodel.pfmodel_2.state is not None:
-            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255)))
 

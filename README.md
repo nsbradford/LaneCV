@@ -2,6 +2,7 @@
 Airport taxiway lane detection with OpenCV-Python.
 
     /lanecv
+        demo.py                 Demo code
         lanes.py                laneDetection() and helpers
         fit.py                  fitLines() and helpers
         model.py                MultiModel and LineModel
@@ -9,10 +10,13 @@ Airport taxiway lane detection with OpenCV-Python.
         util.py                 Misc utilities, mainly wrappers used across modules
         config.py               Constants such as image size
         plotter.py              Helpful plotting functions
+        /proto                  Protobuf files
+            lanecv.proto        Protocol definition file
+            lanecv_pb2.py       Python file generated from lanecv.proto
     /test                       Unit tests
     /media                      Footage for testing
     requirements.txt            Install with $ python install -r requirements.txt
-    runner.py                   Run a demo.
+    runner.py                   Run tests and a demo.
 
 
 ## Usage
@@ -33,6 +37,15 @@ After modifying the `lanecv.proto` definition, use `protoc` to recompile the pyt
 
 Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor. Open the video, and for each frame, update the metamodel state using the results of laneDetection(). A MetaModel is composed of two ParticleFilterModel instances, each of which track a single LineModel. The MetaModel receives updates in the form of a MultiModel (two LineModel instances).
 
+### Completed
+
+* Literature review: Approach is always 1) filter to extract lines, 2) form initial naive hypothesis, 3) fit complex curve with RANSAC, all while limiting search space with simplifying assumptions (e.g. lane is forwards)
+* Python demo: hard-coded perspective projection, background subtraction (remove propeller motion), yellow extraction (works much better than edges)
+* Sequential RANSAC for multiple lines
+* Particle filter for line models
+* Protobuf for sending multi-line models
+
+
 ### Assumptions
 
 * Each lane can be approximated as a single line in form [offset, orientation] from the nose of the plane.
@@ -45,11 +58,13 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
-* Protobuf 
-    * Message architecture
+* Filtering
+    * Fix offset calculation (obvious when displaying…)
+    * Reset ParticleFilterModel after evidence stops being collected
+        * This is causing the models to swap positions
+        * Use default particle filter settings to tell whether or not lanes is appearing/disappearing- prevents hardcoding of edge cases
+* Protobuf
     * Java integration
-* Reset ParticleFilterModel after evidence stops being collected
-    * This is causing the models to swap positions
 
 ### Exploration
 

@@ -125,10 +125,10 @@ class LineModel():
                         width=Constants.IMG_SCALED_WIDTH, widthInMeters=Constants.IMG_WIDTH_IN_METERS):
         self.offset = offset
         self.orientation = orientation
-        offset_pix = LineModel.pixelsToMeters(self.offset, pixel_width=Constants.IMG_SCALED_WIDTH, 
-                            meters_width=Constants.IMG_WIDTH_IN_METERS)
         if not m and not b:
-            m, b = LineModel.offsetOrientationtoLine(offset, orientation)
+            offset_pix = LineModel.pixelsToMeters(self.offset, pixel_width=Constants.IMG_SCALED_WIDTH, 
+                            meters_width=Constants.IMG_WIDTH_IN_METERS)
+            m, b = LineModel.offsetOrientationToLine(offset_pix, orientation)
         self.m = m
         self.b = b
 
@@ -198,12 +198,15 @@ class LineModel():
         return meter_offset / meters_per_pix
 
     @staticmethod
-    def offsetOrientationtoLine(offset, raw_orientation):
+    def offsetOrientationToLine(offset_pix, raw_orientation):
+        """
+            Args:
+        """
         angle_offset = 90#- 90 if raw_orientation >= 0 else 90
         orientation = raw_orientation + angle_offset
         m = math.tan(math.radians(orientation))
         b = LineModel.calcIntercept(x0=LineModel.CENTER, y0=LineModel.NOSE_HEIGHT, slope=m, 
-                            perp_distance=offset)
+                            perp_distance=offset_pix)
         return m, b
 
     @staticmethod
