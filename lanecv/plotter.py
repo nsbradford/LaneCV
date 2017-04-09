@@ -14,12 +14,29 @@ from .model import LineModel
 from .util import resizeFrame
 
 
-def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
-    cv2.circle(img, topLeft, radius=5, color=(0,0,255))
-    cv2.circle(img, topRight, radius=5, color=(0,0,255))
-    cv2.circle(img, bottomLeft, radius=5, color=(0,0,255))
-    cv2.circle(img, bottomRight, radius=5, color=(0,0,255))
+class ImageSet():
 
+    def __init__(self, img, empty, per, mask, background, colored, dilatedEroded, skeletoned, lines):
+        self.img = img
+        self.empty = empty
+        self.per = per
+        self.mask = mask
+        self.background = background
+        self.colored = colored
+        self.dilatedEroded = dilatedEroded
+        self.skeletoned = skeletoned
+        self.lines = lines
+
+
+def addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight):
+    cv2.circle(img, topLeft, radius=5, color=(255,255,255))
+    cv2.circle(img, topRight, radius=5, color=(255,255,255))
+    cv2.circle(img, bottomLeft, radius=5, color=(255,255,255))
+    cv2.circle(img, bottomRight, radius=5, color=(255,255,255))
+    cv2.line(img=img, pt1=topLeft, pt2=topRight, color=(255,255,255), thickness=2)
+    cv2.line(img=img, pt1=topLeft, pt2=bottomLeft, color=(255,255,255), thickness=2)
+    cv2.line(img=img, pt1=bottomRight, pt2=bottomLeft, color=(255,255,255), thickness=2)
+    cv2.line(img=img, pt1=bottomRight, pt2=topRight, color=(255,255,255), thickness=2)
 
 def plotModel(name, img, mymodel, inliers=None, x=None, y=None, color=(255,0,0)):
     # print('RANSAC:, y = {0:.2f}x + {1:.2f} offset {2:.2f} orient {3:.2f}'.format(
@@ -30,8 +47,8 @@ def plotModel(name, img, mymodel, inliers=None, x=None, y=None, color=(255,0,0))
     cv2.line(img=img, pt1=(0,int(mymodel.b)), pt2=(img.shape[1],int(mymodel.m*img.shape[1]+mymodel.b)), 
                         color=color, thickness=2)
     # plot cutoff line
-    cv2.line(img=img, pt1=(0, Constants.IMG_CUTOFF), pt2=(Constants.IMG_SCALED_HEIGHT, Constants.IMG_CUTOFF), 
-                        color=(255,255,255), thickness=2)
+    # cv2.line(img=img, pt1=(0, Constants.IMG_CUTOFF), pt2=(Constants.IMG_SCALED_HEIGHT, Constants.IMG_CUTOFF), 
+    #                     color=(255,255,255), thickness=2)
     # for i in range(inliers.size):
     #     xcoord = x[i]
     #     ycoord = y[i]
@@ -59,7 +76,12 @@ def showFilter(text, particlefilter):
     if particlefilter.state is not None:
         ycoord = int((particlefilter.state_matrix[0] - LineModel.OFFSET_MIN) * transform[0])
         xcoord = int((particlefilter.state_matrix[1] - LineModel.ORIENTATION_MIN) * transform[1])
-        cv2.circle(particle_overlay, (xcoord, ycoord), radius=15, color=255) #color=(0,0,255))
+        cv2.circle(particle_overlay, (xcoord, ycoord), radius=30, color=255) #color=(0,0,255))
+
+        # show last measurement
+        y_measure = int((particlefilter.last_measurement[0] - LineModel.OFFSET_MIN) * transform[0])
+        x_measure = int((particlefilter.last_measurement[1] - LineModel.ORIENTATION_MIN) * transform[1])
+        cv2.circle(particle_overlay, (x_measure, y_measure), radius=15, color=128) #color=(0,0,255))
     cv2.imshow(text, particle_overlay)
 
 
@@ -70,9 +92,9 @@ def showModel(metamodel, img):
         showFilter('model 2', metamodel.pfmodel_2)
     if img is not None:
         if metamodel.pfmodel_1.state is not None:
-            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255)))
+            plotModel('Filter', img, metamodel.pfmodel_1.state, color=(255,0,255))
         if metamodel.pfmodel_2.state is not None:
-            cv2.imshow('model', plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255)))
+            plotModel('Filter', img, metamodel.pfmodel_2.state, color=(0,255,255))
 
 
 def show7(img, empty, per, mask, background, colored, lines):
@@ -91,7 +113,7 @@ def show7(img, empty, per, mask, background, colored, lines):
 
 
 def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned, lines):
-    scale = 0.5
+    scale = 0.7
     img = resizeFrame(img, scale)
     empty = resizeFrame(empty, scale)
     per = resizeFrame(per, scale)
@@ -107,4 +129,20 @@ def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned,
     cv2.imshow('combined', np.vstack((top, bottom)))
 
 
+def showImgSet(imgSet):
+    scale = 0.9
+    img = resizeFrame(imgSet.img, scale)
+    empty = resizeFrame(imgSet.empty, scale)
+    per = resizeFrame(imgSet.per, scale)
+    mask = resizeFrame(imgSet.mask, scale)
+    # background = resizeFrame(imgSet.background, scale)
+    colored = resizeFrame(imgSet.colored, scale)
+    # dilatedEroded = resizeFrame(imgSet.dilatedEroded, scale)
+    skeletoned = resizeFrame(imgSet.skeletoned, scale)
+    lines = resizeFrame(imgSet.lines, scale)
 
+    top = np.hstack((img, per, mask))
+    bottom = np.hstack((empty, colored, skeletoned, lines))
+    cv2.imshow('combined', np.vstack((top, bottom)))
+
+    

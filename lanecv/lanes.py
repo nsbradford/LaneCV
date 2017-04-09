@@ -11,8 +11,9 @@ import math
 
 from .config import Constants
 from .fit import fitLines
-from .plotter import show9, addPerspectivePoints
+from .plotter import ImageSet, addPerspectivePoints
 from .util import getPerspectivePoints
+
 
 
 def extractColor(img):
@@ -85,12 +86,20 @@ def addLabels(per, mask, background, colored, dilatedEroded, skeletoned, lines):
 
 
 def laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=True):
+    """ Primary method.
+        Args:
+            TODO
+        Returns:
+            curve (img)
+            state (MultiModel)
+            imgSet (ImageSet)
+    """
     topLeft, topRight, bottomLeft, bottomRight = getPerspectivePoints(highres_scale)
     perspective = cv2.warpPerspective(img, perspectiveMatrix, (scaled_height,scaled_height) )
     fgmask = fgbg.apply(perspective, learningRate=0.5)
     background = fgbg.getBackgroundImage()
     colored = extractColor(background)
-    dilatedEroded = dilateAndErode(colored, n_dilations=2, n_erosions=4)
+    dilatedEroded = dilateAndErode(colored, n_dilations=3, n_erosions=3)
     skeletoned = skeleton(dilatedEroded)
     curve, state = fitLines(skeletoned)
     if is_display:
@@ -103,7 +112,9 @@ def laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is
                                                 skeletoned,
                                                 curve)
         # show7(img, np.zeros((img.shape[0], img.shape[1]-background.shape[1], 3), np.uint8), per, mask, back, col, lin)
-        show9(  img, np.zeros((img.shape[0], img.shape[1]-background.shape[1], 3), np.uint8), 
-                per, mask, back, col, dilEroded, skel, lin)
-    return curve, state
+        empty = np.zeros((img.shape[0], img.shape[1]-background.shape[1], 3), np.uint8)
+        # show9(  img, empty, 
+        #         per, mask, back, col, dilEroded, skel, lin)
+        imgSet = ImageSet(img, empty, per, mask, back, col, dilEroded, skel, lin)
+    return state, imgSet
 

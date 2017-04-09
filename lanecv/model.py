@@ -129,7 +129,7 @@ class LineModel():
         self.offset = offset
         self.orientation = orientation
         if not m and not b:
-            offset_pix = LineModel.pixelsToMeters(self.offset, pixel_width=Constants.IMG_SCALED_WIDTH, 
+            offset_pix = LineModel.metersToPixels(self.offset, pixel_width=Constants.IMG_SCALED_WIDTH,
                             meters_width=Constants.IMG_WIDTH_IN_METERS)
             m, b = LineModel.offsetOrientationToLine(offset_pix, orientation)
         self.m = m
@@ -158,6 +158,8 @@ class LineModel():
         """ 
             Args:
                 TODO
+            Returns:
+                Offset, orientation
         """
         pixel_offset = LineModel.perpendicularDistancePixels(x0=LineModel.CENTER, 
                             y0=LineModel.NOSE_HEIGHT, slope=m, intercept=b)

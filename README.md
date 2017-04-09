@@ -59,11 +59,8 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
-* Protobuf
-    * ZMQ-Protobuf integration (send to localhost)
-    * Look at ACAPSoftware/zmq/ReadingSpoofer.py for an example
 * Filtering
-    * Fix offset calculation (obvious when displaying…)
+    * Make offsets positive and negative
     * Reset ParticleFilterModel after evidence stops being collected
         * This is causing the models to swap positions
         * Use default particle filter settings to tell whether or not lanes is appearing/disappearing- prevents hardcoding of edge cases
@@ -77,6 +74,7 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ###  Backlog
 
+* Two-way ZMQ-Protobuf integration
 * Optimize to reduce needless image copying
 * Increase dilation and increase resolution
 * Perspective Transform: widen field, expand upwards to horizon

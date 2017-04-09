@@ -29,13 +29,16 @@ class LineModelTest(unittest.TestCase):
         self.assertEquals(answer, meters)
 
     def test_offsetOrientationToLine(self):
-        offset = 1.0
-        offset_pix = LineModel.pixelsToMeters(offset, pixel_width=Constants.IMG_SCALED_WIDTH, 
+        offset = 1.0 
+        offset_pix = LineModel.metersToPixels(offset, pixel_width=Constants.IMG_SCALED_WIDTH, 
                             meters_width=Constants.IMG_WIDTH_IN_METERS)
-        orientation_degrees = 270.0
+        orientation_degrees = 270.0 # horizontal
         m, b = LineModel.offsetOrientationToLine(offset_pix, orientation_degrees)
-        # print('DEBUG {} {}'.format(m, b))
-        # assert False
+        actual = offset_pix + Constants.IMG_CUTOFF
+        print(actual)
+        print('DEBUG {} {}'.format(m, b))
+        self.assertTrue(np.isclose(0.0, m))
+        self.assertTrue(np.isclose(actual, b))
 
 
 class MetaModelTest(unittest.TestCase):

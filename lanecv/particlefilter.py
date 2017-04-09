@@ -12,8 +12,8 @@ from .config import Constants
 
 class ParticleFilterModel():
 
-    LEARNING_RATE = 1e-4
-    VISUALIZATION_SIZE = 300
+    LEARNING_RATE = 1e-3
+    VISUALIZATION_SIZE = 500
     
 
     def __init__(self, particle_cls, n=1000):
@@ -27,6 +27,7 @@ class ParticleFilterModel():
         self.weights = self._init_weights()
         self.state_matrix = self._init_state()
         self.state = None
+        self.last_measurement = None # Used only for plotting
         assert self.particles.shape == (self.n,self.state_size), self.particles.shape
         assert self.weights.shape == (self.n,), self.weights.shape
         assert self.state_matrix.shape == (self.state_size,), self.state_matrix.shape
@@ -102,6 +103,7 @@ class ParticleFilterModel():
         assert self.weights.shape == (self.n,), self.weights.shape
         assert self.state_matrix.shape == (self.state_size,), self.state_matrix.shape
         self.state = self.particle_cls.matrixToModel(self.state_matrix)
+        self.last_measurement = measurement
         return self.state
 
 

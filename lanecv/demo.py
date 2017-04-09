@@ -12,7 +12,7 @@ from .config import Constants
 from .lanes import laneDetection
 from .model import MetaModel
 from .communicate import CommunicationZMQ
-from .plotter import showModel
+from .plotter import showModel, showImgSet
 from .util import resizeFrame, getPerspectiveMatrix
 
 
@@ -95,10 +95,12 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         if i % 1 != 0:
             continue
         img = resizeFrame(frame, highres_scale)
-        curve, state = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
+        state, imgSet = laneDetection(img, fgbg, perspectiveMatrix, scaled_height, 
+                            highres_scale, is_display=is_display)
         metamodel.updateState(state)
         metamodel.sendMessage()
-        showModel(metamodel, curve)
+        showModel(metamodel, imgSet.lines)
+        showImgSet(imgSet)
         if cv2.waitKey(0) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
     cap.release()
