@@ -12,12 +12,13 @@ import math
 from .config import Constants
 from .particlefilter import ParticleFilterModel
 from .proto import lanecv_pb2
+from .communicate import Communication
 
 
 class MetaModel():
     """ A combination of 1 or more ParticleFilterModels. """
 
-    def __init__(self):
+    def __init__(self, com):
         # params = {  offset_range=LineModel.OFFSET_RANGE, 
         #             orientation_range=LineModel.ORIENTATION_RANGE, 
         #             offset_min=LineModel.OFFSET_MIN, 
@@ -25,6 +26,7 @@ class MetaModel():
         #             orientation_min=LineModel.ORIENTATION_MIN, 
         #             orientation_max=LineModel.ORIENTATION_MAX
         #         }
+        self.com = com
         self.pfmodel_1 = ParticleFilterModel(particle_cls=LineModel)
         self.pfmodel_2 = ParticleFilterModel(particle_cls=LineModel)
 
@@ -68,7 +70,8 @@ class MetaModel():
                 m1, m2 = m2, m1
         return MultiModel(m1, m2)
 
-    def messageServer(self):
+
+    def sendMessage(self):
         output_file = 'OUTPUT.txt'
         multiMessage = lanecv_pb2.MultiLaneMessage()
 
@@ -80,21 +83,22 @@ class MetaModel():
             laneMessage2 = multiMessage.laneMessages.add()
             laneMessage2.offset = self.pfmodel_2.state.offset
             laneMessage2.orientation = self.pfmodel_2.state.orientation
-
-        with open(output_file, 'wb') as f:
-            f.write(multiMessage.SerializeToString())
-
-        mmread = lanecv_pb2.MultiLaneMessage()
-        with open(output_file, 'rb') as f:
-            try:
-                mmread.ParseFromString(f.read())
-            except IOError:
-                print('File not found')
-            print('PROTOBUF: read from file:')
-            for lm in mmread.laneMessages:
-                print('\tOffset {} Orientation {}'.format(lm.offset, lm.orientation))
+        self.com.sendMessage(multiMessage)
 
 
+    # def writeToOutputFile(multiMessage, output_file)
+    #     with open(output_file, 'wb') as f:
+    #         f.write(multiMessage.SerializeToString())
+
+    #     mmread = lanecv_pb2.MultiLaneMessage()
+    #     with open(output_file, 'rb') as f:
+    #         try:
+    #             mmread.ParseFromString(f.read())
+    #         except IOError:
+    #             print('File not found')
+    #         print('PROTOBUF: read from file:')
+    #         for lm in mmread.laneMessages:
+    #             print('\tOffset {} Orientation {}'.format(lm.offset, lm.orientation))
 
 
 class MultiModel():

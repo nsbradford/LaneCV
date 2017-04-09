@@ -7,6 +7,7 @@ Airport taxiway lane detection with OpenCV-Python.
         fit.py                  fitLines() and helpers
         model.py                MultiModel and LineModel
         particlefilter.py       MetaModel and ParticleFilterModel
+        communicate.py          ZMQ messaging
         util.py                 Misc utilities, mainly wrappers used across modules
         config.py               Constants such as image size
         plotter.py              Helpful plotting functions
@@ -15,7 +16,7 @@ Airport taxiway lane detection with OpenCV-Python.
             lanecv_pb2.py       Python file generated from lanecv.proto
     /test                       Unit tests
     /media                      Footage for testing
-    requirements.txt            Install with $ python install -r requirements.txt
+    requirements.txt            Install with $ python install -r 
     runner.py                   Run tests and a demo.
 
 
@@ -58,13 +59,15 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
+* Protobuf
+    * ZMQ-Protobuf integration (send to localhost)
+    * Look at ACAPSoftware/zmq/ReadingSpoofer.py for an example
 * Filtering
     * Fix offset calculation (obvious when displaying…)
     * Reset ParticleFilterModel after evidence stops being collected
         * This is causing the models to swap positions
         * Use default particle filter settings to tell whether or not lanes is appearing/disappearing- prevents hardcoding of edge cases
-* Protobuf
-    * Java integration
+
 
 ### Exploration
 
@@ -79,8 +82,3 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 * Perspective Transform: widen field, expand upwards to horizon
 * Try using ridges/edges instead of color (fails under extreme curves)
 * Video Stabilization with Visual Odometry (hard)
-
-
-## Protobuf steps
-
-* Installed pre-built binary protoc-3.2.0-osx-x86_64.zip from https://github.com/google/protobuf/releases/tag/v3.2.0

@@ -9,6 +9,8 @@ protobuf==3.2.0
 pyparsing==2.1.10
 python-dateutil==2.6.0
 pytz==2016.10
+pyzmq==16.0.2
 scikit-learn==0.18.1
 scipy==0.18.1
 six==1.10.0
+zmq==0.0.0
