@@ -8,7 +8,7 @@
 import zmq
 
 
-class Communication():
+class CommunicationZMQ():
 
 
     def __init__(self):

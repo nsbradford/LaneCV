@@ -11,7 +11,7 @@ import cv2
 from .config import Constants
 from .lanes import laneDetection
 from .model import MetaModel
-from .communicate import Communication
+from .communicate import CommunicationZMQ
 from .plotter import showModel
 from .util import resizeFrame, getPerspectiveMatrix
 
@@ -85,7 +85,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         Returns:
             None
     """
-    metamodel = MetaModel(com=Communication())
+    metamodel = MetaModel(com=CommunicationZMQ())
     showModel(metamodel, None)
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()

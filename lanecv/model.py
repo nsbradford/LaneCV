@@ -12,7 +12,6 @@ import math
 from .config import Constants
 from .particlefilter import ParticleFilterModel
 from .proto import lanecv_pb2
-from .communicate import Communication
 
 
 class MetaModel():
