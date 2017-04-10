@@ -75,6 +75,7 @@ def getVideoSource(filename):
             break
         else:
             yield frame
+    cap.release()
 
 
 def particleFilterDemo(filename, is_display=True, highres_scale=0.5, 
@@ -90,6 +91,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     for i, frame in enumerate(getVideoSource(filename)):
+        print('---------------------\tFrame {}'.format(i+1))
         if n_frames > 0 and i > n_frames:
             break
         if i % 1 != 0:
@@ -99,10 +101,10 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
                             highres_scale, is_display=is_display)
         metamodel.updateState(state)
         metamodel.sendMessage()
-        showModel(metamodel, imgSet.lines)
-        showImgSet(imgSet)
+        if is_display:
+            showModel(metamodel, imgSet.lines)
+            showImgSet(imgSet)
         if cv2.waitKey(0) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
-    cap.release()
     cv2.destroyAllWindows()
 

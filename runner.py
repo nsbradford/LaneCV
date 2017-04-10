@@ -28,6 +28,6 @@ if __name__ == '__main__':
         # pictureDemo('taxi_curve.png')
         # videoDemo('taxi_intersect.mp4', is_display=True) # framerate of 29.97
         # videoDemo('../../taxi_trim.mp4') # framerate of 29.97
-        # timerDemo()
+        timerDemo()
         # particleFilterDemo('../../taxi_trim.mp4')
-        particleFilterDemo('taxi_intersect.mp4')
+        # particleFilterDemo('taxi_intersect.mp4')

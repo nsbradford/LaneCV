@@ -102,6 +102,7 @@ def laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is
     dilatedEroded = dilateAndErode(colored, n_dilations=3, n_erosions=3)
     skeletoned = skeleton(dilatedEroded)
     curve, state = fitLines(skeletoned)
+    imgSet = None
     if is_display:
         addPerspectivePoints(img, topLeft, topRight, bottomLeft, bottomRight)
         per, mask, back, col, dilEroded, skel, lin = addLabels(  perspective, 
