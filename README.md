@@ -40,6 +40,19 @@ After modifying the `lanecv.proto` definition, use `protoc` to recompile the pyt
 
 Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor. Open the video, and for each frame, update the metamodel state using the results of laneDetection(). A MetaModel is composed of two ParticleFilterModel instances, each of which track a single LineModel. The MetaModel receives updates in the form of a MultiModel (two LineModel instances).
 
+### Algorithm
+
+1. Apply perspective transform to Region of Interest (ROI)
+2. Update N-frame (2-frame) background model
+3. Extract background to eliminate propeller motion
+4. Extract yellow color
+5. Dilate and erode
+6. Apply morphological skeleton procedure to extract “centers” of lanes
+7. Predict if there are multiple lanes using covariance matrix eigenvalues
+8. Use sequential RANSAC to fit up to two lines to data
+9. Update particle filtering models with RANSAC hypotheses
+10. Return particle filter estimates
+
 ### Completed
 
 * Literature review: Approach is always 1) filter to extract lines, 2) form initial naive hypothesis, 3) fit complex curve with RANSAC, all while limiting search space with simplifying assumptions (e.g. lane is forwards)
