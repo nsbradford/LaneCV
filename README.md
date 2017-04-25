@@ -1,6 +1,8 @@
 # LaneCV
 Airport taxiway lane detection with OpenCV-Python.
 
+![Processing pipeline screenshot](media/results/2screenshot_img.png "Processing pipeline screenshot")
+
     /lanecv
         demo.py                 Demo code
         lanes.py                laneDetection() and helpers
