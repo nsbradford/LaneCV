@@ -61,10 +61,10 @@ class MetaModel():
             distance = ParticleFilterModel._distance(particle_cls=LineModel,
                                 new_particles=observations, 
                                 measurement=last_measurement)
-            print('\t\tChoice 1 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
-                                distance[0], m1.offset, m1.orientation))
-            print('\t\tChoice 2 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
-                                distance[1], m2.offset, m2.orientation))
+            # print('\t\tChoice 1 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
+            #                     distance[0], m1.offset, m1.orientation))
+            # print('\t\tChoice 2 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
+            #                     distance[1], m2.offset, m2.orientation))
             if distance[0] > distance[1]:
                 m1, m2 = m2, m1
         return MultiModel(m1, m2)

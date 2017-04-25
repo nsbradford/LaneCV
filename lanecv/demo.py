@@ -104,7 +104,7 @@ def particleFilterDemo(filename, is_display=True, highres_scale=0.5,
         if is_display:
             showModel(metamodel, imgSet.lines)
             showImgSet(imgSet)
-        if cv2.waitKey(0) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
+        if cv2.waitKey(1) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
             break
     cv2.destroyAllWindows()
 

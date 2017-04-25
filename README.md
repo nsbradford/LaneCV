@@ -64,7 +64,9 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
     * Reset ParticleFilterModel after evidence stops being collected
         * This is causing the models to swap positions
         * Use default particle filter settings to tell whether or not lanes is appearing/disappearing- prevents hardcoding of edge cases
-
+* Review skeleton procedure
+    * Overview: https://en.wikipedia.org/wiki/Topological_skeleton
+    * Our algorithm: https://en.wikipedia.org/wiki/Morphological_skeleton
 
 ### Exploration
 
@@ -74,6 +76,7 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ###  Backlog
 
+* Model particle motion as a moving average of the previous changes; or as plane motion forward; or as plane motion towards the center line.
 * Two-way ZMQ-Protobuf integration
 * Optimize to reduce needless image copying
 * Increase dilation and increase resolution
