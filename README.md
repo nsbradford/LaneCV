@@ -24,9 +24,35 @@ Airport taxiway lane detection with OpenCV-Python.
 
 ## Usage
 
-Note that you'll need OpenCV compiled with FFMPEG support in order to load videos.
+### Requirements
 
-    $ python runner.py
+Note that you'll need OpenCV compiled with FFMPEG support in order to load videos. Use this [script](https://github.com/nsbradford/ExuberantCV/blob/master/installOpenCV.sh) and some tutorials to understand:
+
+* MacOS
+    * The [easy](http://www.pyimagesearch.com/2016/12/19/install-opencv-3-on-macos-with-homebrew-the-easy-way/) way using Homebrew
+    * The [hard](http://www.pyimagesearch.com/2016/11/28/macos-install-opencv-3-and-python-2-7/?__s=6qbo7sdne7fzcniijrik) way
+    * With FFMPEG support [here](http://blog.jiashen.me/2014/12/23/build-opencv-3-on-mac-os-x-with-python-3-and-ffmpeg-support/)
+* Ubuntu
+    * [General](http://www.pyimagesearch.com/2016/10/24/ubuntu-16-04-how-to-install-opencv/)
+    * [With CUDA](http://www.pyimagesearch.com/2016/07/11/compiling-opencv-with-cuda-support/)
+    * With ffmpeg support (needed for videos) [here](https://ubuntuforums.org/showthread.php?t=2219550)
+    * [Compiling OpenCV with FFMPEG](http://www.wiomax.com/compile-opencv-and-ffmpeg-on-ubuntu/)
+* [Installing ffmpeg](http://tipsonubuntu.com/2016/11/02/install-ffmpeg-3-2-via-ppa-ubuntu-16-04/)
+* [Compiling ffmpeg from source](http://blog.mycodesite.com/compile-opencv-with-ffmpeg-for-ubuntudebian/)
+* Installing CUDA
+    * Go [here](https://developer.nvidia.com/cuda-downloads) and download .deb for Ubuntu, DO NOT try the automatic runner it’s a pain 
+    * Official documentation [guide](http://developer.download.nvidia.com/compute/cuda/7.5/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf)
+    * Helpful blog [post](http://kislayabhi.github.io/Installing_CUDA_with_Ubuntu/)
+
+Then to finish, activate your new `cv` virtual environment and install the other requirements:
+
+    $ workon cv 
+    $ pip install -r requirements.txt
+
+### Demo
+
+Run a demo:
+    $ python runner.py   
 
 ### Protobuf compilation
 
@@ -52,15 +78,6 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 8. Use sequential RANSAC to fit up to two lines to data
 9. Update particle filtering models with RANSAC hypotheses
 10. Return particle filter estimates
-
-### Completed
-
-* Literature review: Approach is always 1) filter to extract lines, 2) form initial naive hypothesis, 3) fit complex curve with RANSAC, all while limiting search space with simplifying assumptions (e.g. lane is forwards)
-* Python demo: hard-coded perspective projection, background subtraction (remove propeller motion), yellow extraction (works much better than edges)
-* Sequential RANSAC for multiple lines
-* Particle filter for line models
-* Protobuf for sending multi-line models
-
 
 ### Assumptions
 
