@@ -1,5 +1,5 @@
 # LaneCV
-Airport taxiway lane detection with OpenCV-Python. A part of WPI's [ACAP](http://www.acap.io) (Autonomous Cargo Aircraft Project), completed 2016-2017 by Nicholas Bradford.
+Airport taxiway lane detection with OpenCV-Python. A part of WPI's [ACAP](http://www.acap.io) (Autonomous Cargo Aircraft Project), completed 2016-2017 by Nicholas Bradford (view the MQP report [here](https://web.wpi.edu/Pubs/E-project/Available/E-project-042717-143558/unrestricted/ACAPFinalReport.pdf)).
 
 ![Processing pipeline screenshot](media/results/2screenshot_img.png "Processing pipeline screenshot")
 
