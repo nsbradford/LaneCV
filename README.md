@@ -52,6 +52,7 @@ Then to finish, activate your new `cv` virtual environment and install the other
 ### Demo
 
 Run a demo:
+
     $ python runner.py   
 
 ### Protobuf compilation
