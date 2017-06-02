@@ -12,10 +12,12 @@ from .config import Constants
 
 
 def resizeFrame(img, scale):
+    """ Clean wrapper for resizing a frame. """
     return cv2.resize(img, dsize=None, fx=scale, fy=scale)
 
 
 def getPerspectivePoints(highres_scale):
+    """ Returns topLeft, topRight, bottomLeft, bottomRight coordinate tuples. """
     original_width = 1920
     original_height = 1080
     scaled_width = int(highres_scale * original_width)
@@ -32,8 +34,7 @@ def getPerspectivePoints(highres_scale):
 
 
 def getPerspectiveMatrixFromPoints(topLeft, topRight, bottomLeft, bottomRight):
-    # pts1 = np.float32([[382, 48], [411, 48], [292, 565], [565, 565]])
-    # pts2 = np.float32([[0,0],[100,0],[0,1600],[100,1600]])
+    """ Get the 3x3 perspective transform matrix from a set of points in the original image. """
     pts1 = np.float32([ topLeft, topRight, bottomLeft, bottomRight ])
     pts2 = np.float32([[0,0], [Constants.IMG_SCALED_HEIGHT,0], [0,Constants.IMG_SCALED_HEIGHT], [Constants.IMG_SCALED_HEIGHT,Constants.IMG_SCALED_HEIGHT]])   
     M = cv2.getPerspectiveTransform(pts1,pts2)  
@@ -41,6 +42,7 @@ def getPerspectiveMatrixFromPoints(topLeft, topRight, bottomLeft, bottomRight):
 
 
 def getPerspectiveMatrix(highres_scale):
+    """ Wrapper for getting the perspective matrix. """
     topLeft, topRight, bottomLeft, bottomRight = getPerspectivePoints(highres_scale)
     perspectiveMatrix = getPerspectiveMatrixFromPoints(topLeft, topRight, bottomLeft, bottomRight)
     return perspectiveMatrix

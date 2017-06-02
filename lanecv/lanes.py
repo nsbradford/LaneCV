@@ -1,7 +1,7 @@
 """
     lanes.py
-    Nicholas S. Bradford
     12 Feb 2017
+    Nicholas S. Bradford
 
 """
 
@@ -15,31 +15,18 @@ from .plotter import ImageSet, addPerspectivePoints
 from .util import getPerspectivePoints
 
 
-
 def extractColor(img):
-    # green = np.uint8([[[0,255,0 ]]])
-    # hsv_green = cv2.cvtColor(green,cv2.COLOR_BGR2HSV)
-    # print hsv_green # [[[ 60 255 255]]]
-    # yellow: cvScalar(20, 100, 100), cvScalar(30, 255, 255)
-
+    """ Extract only yellow pixels from img. """
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    # lower_yellow = np.array([10, 70, 30])
-    lower_yellow = np.array([10, 80, 30])
-    upper_yellow = np.array([60, 255, 255])
+    lower_yellow = np.array([10, 80, 30]) # orig: (20, 100, 100)
+    upper_yellow = np.array([60, 255, 255]) # orig: (30, 255, 255)
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow) # Threshold the HSV image to get only blue colors
     res = cv2.bitwise_and(img, img, mask= mask) # Bitwise-AND mask and original image
-    # answer = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
     return res
 
 
-# def extractEdges(img):
-#     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-#     edges = cv2.Canny(gray, 200, 255, apertureSize=5)
-#     bgrEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-#     return bgrEdges
-
-
 def dilateAndErode(img, n_dilations, n_erosions):
+    """ Apply morphological dilations then erosions. """
     kernel = np.ones((5,5), np.uint8)
     dilated = cv2.dilate(img, kernel, iterations=n_dilations)
     morphed = cv2.erode(dilated, kernel, iterations=n_erosions)
@@ -47,14 +34,10 @@ def dilateAndErode(img, n_dilations, n_erosions):
 
 
 def skeleton(original):
-    # kernel = np.ones((10,10),np.uint8)
-    # closed = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
-    # return closed
-
+    """ Apply morphological skeleton technique to extract 'centers' of thick lines. """
     kernel = np.ones((5,5), np.uint8)
     dilated = cv2.dilate(original, kernel, iterations=0)
     morphed = cv2.erode(dilated, kernel, iterations=0)
-
     gray = cv2.cvtColor(morphed, cv2.COLOR_BGR2GRAY)
     size = np.size(gray)
     skel = np.zeros(gray.shape,np.uint8)
@@ -75,6 +58,7 @@ def skeleton(original):
 
 
 def addLabels(per, mask, background, colored, dilatedEroded, skeletoned, lines):
+    """ Add text labels to pipeline images. """
     cv2.putText(per, 'Perspective', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
     cv2.putText(mask, 'BackgroundMotionSubtraction', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
     cv2.putText(background, 'Background', (10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255,255,255), 1, cv2.LINE_AA)
@@ -88,9 +72,12 @@ def addLabels(per, mask, background, colored, dilatedEroded, skeletoned, lines):
 def laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=True):
     """ Primary method.
         Args:
-            TODO
+            fgbg (BackgroundSubtractorMOG2): background model 
+            perspectiveMatrix (np.array): 3x3 matrix for perspective transform
+            scaled_height (float): height of the image after scaling
+            highres_scale (float): scale for the video frame before processing
+            is_display (bool): if True, display particle filters and processing pipeline
         Returns:
-            curve (img)
             state (MultiModel)
             imgSet (ImageSet)
     """

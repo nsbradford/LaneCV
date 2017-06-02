@@ -15,22 +15,19 @@ from .proto import lanecv_pb2
 
 
 class MetaModel():
-    """ A combination of 1 or more ParticleFilterModels. """
-
+    
     def __init__(self, com):
-        # params = {  offset_range=LineModel.OFFSET_RANGE, 
-        #             orientation_range=LineModel.ORIENTATION_RANGE, 
-        #             offset_min=LineModel.OFFSET_MIN, 
-        #             offset_max=LineModel.OFFSET_MAX, 
-        #             orientation_min=LineModel.ORIENTATION_MIN, 
-        #             orientation_max=LineModel.ORIENTATION_MAX
-        #         }
+        """ A combination of 1 or more ParticleFilterModels. 
+            Args:
+                com (CommunicationZMQ): has a sendMessage() method for output.
+        """
         self.com = com
         self.pfmodel_1 = ParticleFilterModel(particle_cls=LineModel)
         self.pfmodel_2 = ParticleFilterModel(particle_cls=LineModel)
 
 
     def updateState(self, multimodel):
+        """ Wrapper for updating the current state and making sure of proper tracking. """
         if multimodel.model1 is None and multimodel.model2 is None:
             self.pfmodel_1.updateStateNoEvidence()
             self.pfmodel_2.updateStateNoEvidence()
@@ -45,22 +42,23 @@ class MetaModel():
 
 
     @staticmethod
-    def chooseBetweenModels(multimodel, last_measurement):
-        """
+    def chooseBetweenModels(multimodel_input, previous_state):
+        """ Ensures proper tracking by re-ordering the input models to align 
+                with the state models.
             Args:
-                multimodel (MultiModel): new evidence
+                multimodel_input (MultiModel): new evidence
                 last_measurement (np.array): previous model
             Returns:
-                MultiModel
+                MultiModel ()
         """
-        m1 = multimodel.model1
-        m2 = multimodel.model2
-        if multimodel.model2 is not None:
+        m1 = multimodel_input.model1
+        m2 = multimodel_input.model2
+        if multimodel_input.model2 is not None:
             observations = np.array([   [m1.offset, m1.orientation],
                                         [m2.offset, m2.orientation]])
             distance = ParticleFilterModel._distance(particle_cls=LineModel,
                                 new_particles=observations, 
-                                measurement=last_measurement)
+                                measurement=previous_state)
             # print('\t\tChoice 1 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
             #                     distance[0], m1.offset, m1.orientation))
             # print('\t\tChoice 2 dist {0:.2f}: \toffset {1:.2f} \t orientation {2:.2f}'.format(
@@ -71,6 +69,7 @@ class MetaModel():
 
 
     def sendMessage(self):
+        """ Construct a Protobuf message and send it over self.com """
         output_file = 'OUTPUT.txt'
         multiMessage = lanecv_pb2.MultiLaneMessage()
 
@@ -85,27 +84,12 @@ class MetaModel():
         self.com.sendMessage(multiMessage)
 
 
-    # def writeToOutputFile(multiMessage, output_file)
-    #     with open(output_file, 'wb') as f:
-    #         f.write(multiMessage.SerializeToString())
-
-    #     mmread = lanecv_pb2.MultiLaneMessage()
-    #     with open(output_file, 'rb') as f:
-    #         try:
-    #             mmread.ParseFromString(f.read())
-    #         except IOError:
-    #             print('File not found')
-    #         print('PROTOBUF: read from file:')
-    #         for lm in mmread.laneMessages:
-    #             print('\tOffset {} Orientation {}'.format(lm.offset, lm.orientation))
-
-
 class MultiModel():
 
     def __init__(self, model1, model2=None):
+        """ Combination of one or more LineModels. """
         self.model1 = model1
         self.model2 = model2
-
 
 
 class LineModel():
@@ -113,6 +97,8 @@ class LineModel():
         Attributes:
             offset (float): shortest (perpendicular) distance to the lane in meters
             orientation (float): that the lane is offset from dead-ahead (+ slope means + degrees)
+            m: slope of line
+            b: intercept of line on image
     """
 
     OFFSET_MIN = -5.0
@@ -137,6 +123,7 @@ class LineModel():
 
     @classmethod
     def from_line(cls, m, b):
+        """ Create a LineModel from (m, b) line. """
         offset, orientation = LineModel.lineToOffsetOrientation(m, b)
         return cls(offset, orientation + 180, m=m, b=b)
 
@@ -155,11 +142,8 @@ class LineModel():
 
     @staticmethod
     def lineToOffsetOrientation(m, b):
-        """ 
-            Args:
-                TODO
-            Returns:
-                Offset, orientation
+        """ Calculates offset and orientation from (m, b) pair.
+            TODO: some bug exists.
         """
         pixel_offset = LineModel.perpendicularDistancePixels(x0=LineModel.CENTER, 
                             y0=LineModel.NOSE_HEIGHT, slope=m, intercept=b)
@@ -182,7 +166,7 @@ class LineModel():
 
     @staticmethod
     def pixelsToMeters(pixel_offset, pixel_width, meters_width):
-        """
+        """ Convert pixels to meters.
             Args:
                 pixel_offset: offset from lane, in img pixels
                 pixel_width: width of image in pixels
@@ -193,7 +177,7 @@ class LineModel():
 
     @staticmethod
     def metersToPixels(meter_offset, pixel_width, meters_width):
-        """
+        """ Convert meters to pixels
             Args:
                 pixel_offset: offset from lane, in img pixels
                 pixel_width: width of image in pixels
@@ -204,8 +188,12 @@ class LineModel():
 
     @staticmethod
     def offsetOrientationToLine(offset_pix, raw_orientation):
-        """
+        """ Calculates (m, b) pair from offset and orientation.
             Args:
+                offset_pix: offset in pixels
+                raw_orientation: degrees
+            Returns:
+                m, b
         """
         angle_offset = 90#- 90 if raw_orientation >= 0 else 90
         orientation = raw_orientation + angle_offset
@@ -216,6 +204,7 @@ class LineModel():
 
     @staticmethod
     def calcIntercept(x0, y0, slope, perp_distance):
+        """ Calculate intercept (b) from a point (x0, y0), slope, and perpendicular distance. """
         first_term = perp_distance * (math.sqrt(slope**2 + (-1)**2))
         second_term = (- slope * x0 + y0)
         sign = LineModel.calcInterceptSign(perp_distance, slope)
@@ -223,6 +212,9 @@ class LineModel():
 
     @staticmethod
     def calcInterceptSign(perp_distance, slope):
+        """ Calculate whether the intercept is positive or negative.
+            TODO: bug.
+        """ 
         answer = 1
         positive_slope = slope >= 0
         positive_offset = perp_distance >= 0

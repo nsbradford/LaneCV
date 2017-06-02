@@ -16,6 +16,85 @@ from sklearn.cluster import SpectralClustering
 import matplotlib.pyplot as plt
 
 
+    # def writeToOutputFile(multiMessage, output_file)
+    #     """ Debug output by serializing messages to an output file. """
+    #     with open(output_file, 'wb') as f:
+    #         f.write(multiMessage.SerializeToString())
+
+    #     mmread = lanecv_pb2.MultiLaneMessage()
+    #     with open(output_file, 'rb') as f:
+    #         try:
+    #             mmread.ParseFromString(f.read())
+    #         except IOError:
+    #             print('File not found')
+    #         print('PROTOBUF: read from file:')
+    #         for lm in mmread.laneMessages:
+    #             print('\tOffset {} Orientation {}'.format(lm.offset, lm.orientation))
+
+
+# def extractEdges(img):
+#     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+#     edges = cv2.Canny(gray, 200, 255, apertureSize=5)
+#     bgrEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+#     return bgrEdges
+
+
+# def show7(img, empty, per, mask, background, colored, lines):
+#     """ Show the 7 components of the pipeline. """
+#     scale = 0.5
+#     img = cv2.resize(img, dsize=None, fx=scale, fy=scale)
+#     empty = cv2.resize(empty, dsize=None, fx=scale, fy=scale)
+#     per = cv2.resize(per, dsize=None, fx=scale, fy=scale)
+#     mask = cv2.resize(mask, dsize=None, fx=scale, fy=scale)
+#     background = cv2.resize(background, dsize=None, fx=scale, fy=scale)
+#     colored = cv2.resize(colored, dsize=None, fx=scale, fy=scale)
+#     lines = cv2.resize(lines, dsize=None, fx=scale, fy=scale)
+
+#     top = np.hstack((img, per, background))
+#     bottom = np.hstack((empty, mask, colored, lines))
+#     cv2.imshow('combined', np.vstack((top, bottom)))
+
+
+# def show9(img, empty, per, mask, background, colored, dilatedEroded, skeletoned, lines):
+#     scale = 0.7
+#     img = resizeFrame(img, scale)
+#     empty = resizeFrame(empty, scale)
+#     per = resizeFrame(per, scale)
+#     mask = resizeFrame(mask, scale)
+#     background = resizeFrame(background, scale)
+#     colored = resizeFrame(colored, scale)
+#     lines = resizeFrame(lines, scale)
+#     dilatedEroded = resizeFrame(dilatedEroded, scale)
+#     skeletoned = resizeFrame(skeletoned, scale)
+
+#     top = np.hstack((img, per, background, mask))
+#     bottom = np.hstack((empty, colored, dilatedEroded, skeletoned, lines))
+#     cv2.imshow('combined', np.vstack((top, bottom)))
+
+
+# def videoDemo(filename, is_display=True, highres_scale=0.5, scaled_height=Constants.IMG_SCALED_HEIGHT, 
+#                         n_frames=-1):
+#     """ Video demo with no particle filtering. """
+#     perspectiveMatrix = getPerspectiveMatrix(highres_scale)
+#     fgbg = cv2.createBackgroundSubtractorMOG2()
+#     cap = openVideo(filename)
+#     count = 0
+#     while(cap.isOpened()):
+#         count += 1
+#         if n_frames > 0 and count > n_frames:
+#             break
+#         ret, frame = cap.read()
+#         if not ret:
+#             break
+#         img = resizeFrame(frame, highres_scale)
+#         laneDetection(img, fgbg, perspectiveMatrix, scaled_height, highres_scale, is_display=is_display)
+#         if cv2.waitKey(1) & 0xFF == ord('q'): # 1000 / 29.97 = 33.37
+#             break
+#     cap.release()
+#     cv2.destroyAllWindows()
+
+
+
 def fitRobustLine(img):
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     # ret, thresh = cv2.threshold(gray,127,255,cv2.THRESH_BINARY)

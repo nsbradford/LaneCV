@@ -10,8 +10,8 @@ import zmq
 
 class CommunicationZMQ():
 
-
     def __init__(self):
+        """ Handles connection to the ZMQ messaging server. """
         port = "5555"
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
@@ -19,4 +19,5 @@ class CommunicationZMQ():
 
 
     def sendMessage(self, protobuf_msg):
+        """ Send a Protobuf message to the ZMQ server. """
         self.socket.send(protobuf_msg.SerializeToString())

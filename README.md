@@ -16,6 +16,7 @@ Airport taxiway lane detection with OpenCV-Python.
         /proto                  Protobuf files
             lanecv.proto        Protocol definition file
             lanecv_pb2.py       Python file generated from lanecv.proto
+        archive.py              Old code archived away
     /test                       Unit tests
     /media                      Footage for testing
     requirements.txt            Install with $ python install -r 
@@ -74,6 +75,7 @@ Initialize by creating a MetaModel, perspectiveMatrix, and backgroundSubtractor.
 
 ### Priorities
 
+* IMPORTANT: Debug offset calculation issues.
 * Filtering
     * Make offsets positive and negative
     * Reset ParticleFilterModel after evidence stops being collected
